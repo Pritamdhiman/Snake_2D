@@ -29,7 +29,6 @@ public class GamePanel extends JPanel{
         this.addKeyListener(new KeyH());
         this.setFocusTraversalKeysEnabled(false);
         this.setDoubleBuffered(true);
-        this.requestFocusInWindow();
         random = new Random();
         this.requestFocusInWindow();  // Ensure the panel is focused to receive key events
     }
