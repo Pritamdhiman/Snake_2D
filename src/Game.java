@@ -1,33 +1,68 @@
 import java.awt.*;
 
 public class Game implements Runnable {
-    private GamePanel gp;
-    private Game_window gw;
+    private Game_panel gp;
+    private Game_frame gf;
     private Thread game_thread;
-    final static int FPS = 60;
-    final static int UPS = 60;
+    final static int FPS = 90;
+    final static int UPS = 90;
+    private Snake s;
+    private Food food;
 
     public Game(){
-        gp = new GamePanel(this);
-        gw = new Game_window(gp);
-        gp.requestFocus();
+        init_classes();
+        gp.requestFocusInWindow();
         start_game_loop();
     }
 
+    private void init_classes(){
+        gp = new Game_panel(this);
+        gf = new Game_frame(gp);
+//        gp.requestFocus();
+        s = new Snake();
+        food = new Food(s);
+        gp.addKeyListener(new KeyH(s));
+        s.setFood(food);
+    }
+
     private void start_game_loop(){
-        gp.newFood();
-        gp.running = true;
+        food.newFood();
+        s.running = true;
         game_thread = new Thread(this);
         game_thread.start();
     }
 
     public void update(){
         // Update everything like, game_panel, MC, NPC, etc.
-        gp.update();
+        s.update();
     }
 
     public void render(Graphics g){
         // Render everything like, game_panel, MC, NPC, etc.
+        if (s.running) {
+            food.render(g);
+            s.render(g);
+            g.setColor(Color.red);
+            g.setFont(new Font("Ink Free", Font.BOLD, 30));
+            FontMetrics metrics = g.getFontMetrics(g.getFont());
+            g.drawString("Score: " + food.food_eaten, (gp.SCREEN_WIDTH - metrics.stringWidth("Score: ")) / 2, g.getFont().getSize());
+
+        } else {
+            gameOver(g);
+        }
+
+    }
+
+    public void gameOver(Graphics g) {
+        g.setColor(Color.red);
+        g.setFont(new Font("Ink Free", Font.BOLD, 75));
+        FontMetrics metrics = g.getFontMetrics(g.getFont());
+        g.drawString("Game Over", (gp.SCREEN_WIDTH - metrics.stringWidth("Game Over")) / 2, gp.SCREEN_HEIGHT / 2);
+
+        g.setColor(Color.red);
+        g.setFont(new Font("Ink Free", Font.BOLD, 30));
+        FontMetrics metrics2 = g.getFontMetrics(g.getFont());
+        g.drawString("Score: " + food.food_eaten, (gp.SCREEN_WIDTH - metrics2.stringWidth("Score: ")) / 2, g.getFont().getSize());
     }
 
 
@@ -42,7 +77,7 @@ public class Game implements Runnable {
         int frames = 0;
         int updates = 0;
 
-        while (gp.running) {
+        while (s.running) {
             long currentTime = System.nanoTime();
             deltaU += (currentTime - previousTime) / timePerUpdate;
             deltaF += (currentTime - previousTime) / timePerFrame;
@@ -70,5 +105,13 @@ public class Game implements Runnable {
 
             Thread.yield(); // optional, gives CPU breathing room
         }
+    }
+
+    public Food get_food() {
+        return food;
+    }
+
+    public Snake get_snake(){
+        return s;
     }
 }
